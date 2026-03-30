@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>FSociety Dark System</title>
+
+<style>
+/* ---------------------- */
+/*   TEMA SCURO MODERNO   */
+/* ---------------------- */
+
+body {
+    font-family: "Fira Code", monospace;
+    margin: 0;
+    padding: 0;
+    background: radial-gradient(circle at top, #050505 0%, #000 70%);
+    color: #00ff9f;
+    backdrop-filter: blur(4px);
+}
+
+/* Temi dinamici */
+body.nick {
+    --accent: #ff003c;
+    background: radial-gradient(circle at top, #200006 0%, #000 70%);
+    color: var(--accent);
+}
+
+body.root {
+    --accent: #b400ff;
+    background: url("https://www.kali.org/wallpapers/images/2025/kali-tiles.jpg") center/cover no-repeat fixed;
+    color: var(--accent);
+}
+
+body.user {
+    --accent: #00ff9f;
+    background: radial-gradient(circle at top, #001a12 0%, #000 70%);
+    color: var(--accent);
+}
+
+/* Boot screen */
+#bootScreen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+}
+#bootScreen img {
+    width: 180px;
+    margin-bottom: 20px;
+}
+#bootText {
+    color: #00ff9f;
+    font-size: 1rem;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background: rgba(0,0,0,0.55);
+    border-right: 1px solid var(--accent);
+    padding: 15px;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 20px #000;
+}
+
+.main {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+}
+
+/* Titoli */
+h2 {
+    margin-top: 0;
+    font-size: 1rem;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 4px;
+    text-shadow: 0 0 6px var(--accent);
+}
+
+/* Inputs */
+input, textarea, select {
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 6px;
+    margin-bottom: 8px;
+    font-family: inherit;
+    border-radius: 6px;
+    backdrop-filter: blur(4px);
+}
+
+/* Buttons */
+button {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-right: 5px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+button:hover {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 10px var(--accent);
+}
+
+/* File list */
+.file-item {
+    padding: 6px;
+    border-bottom: 1px dashed var(--accent);
+    cursor: pointer;
+    border-radius: 4px;
+}
+.file-item:hover {
+    background: var(--accent);
+    color: #000;
+}
+
+/* Terminal */
+#terminalOutput {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid var(--accent);
+    height: 200px;
+    padding: 6px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    border-radius: 6px;
+}
+
+/* ---------------------- */
+/*   POPUP REGISTRAZIONE  */
+/* ---------------------- */
+
+#registerPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9998;
+}
+
+.popup-box {
+    width: 350px;
+    background: rgba(0,0,0,0.7);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--accent);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 20px var(--accent);
+}
+
+.popup-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.closePopup {
+    margin-top: 10px;
+    width: 100%;
+}
+</style>
+</head>
+
+<body class="user">
+
+<!-- BOOT SCREEN -->
+<div id="bootScreen">
+    <img src="https://m.media-amazon.com/images/I/61RcJQwv2HL._AC_UF350,350_QL80_.jpg">
+    <pre id="bootText"></pre>
+</div>
+
+<!-- POPUP REGISTRAZIONE -->
+<div id="registerPopup">
+    <div class="popup-box">
+        <h2>Registrazione</h2>
+
+        <input id="regUser" placeholder="Nuovo username">
+        <input id="regPass" type="password" placeholder="Nuova password">
+
+        <button id="registerBtn">Crea Account</button>
+        <button class="closePopup" id="closeRegister">Chiudi</button>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2>Login</h2>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button id="loginBtn">Login</button>
+        <button id="logoutBtn" style="display:none;">Logout</button>
+        <button id="openRegister">Registrati</button>
+
+        <h2>Utenti</h2>
+        <div id="usersList"></div>
+
+        <div id="rootPanel" style="display:none;">
+            <h2>Gestisci utente</h2>
+            <select id="rootUserSelect"></select>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <h2>File Manager</h2>
+        <div id="filesList"></div>
+
+        <h2>Editor</h2>
+        <input id="fileName" placeholder="Nome file">
+        <textarea id="fileContent" placeholder="Contenuto file" rows="6"></textarea>
+        <button id="saveFileBtn">Salva</button>
+        <button id="newFileBtn">Nuovo</button>
+        <button id="deleteFileBtn">Elimina</button>
+
+        <h2>Terminale</h2>
+        <div id="terminalOutput"></div>
+        <input id="terminalInput" placeholder="Comandi: help, ls, cat, whoami, clear, reset-all, broadcast, add-file-all">
+    </div>
+
+</div>
+
+<script>
+/* BOOT SEQUENCE */
+const bootLines = [
+    "FSOCIETY SYSTEM BOOTING...",
+    "Loading modules...",
+    "Checking authentication...",
+    "Decrypting storage...",
+    "System ready."
+];
+
+let i = 0;
+function boot() {
+    if (i < bootLines.length) {
+        document.getElementById("bootText").textContent += bootLines[i] + "\n";
+        i++;
+        setTimeout(boot, 500);
+    } else {
+        setTimeout(() => {
+            document.getElementById("bootScreen").remove();
+        }, 500);
+    }
+}
+boot();
+
+/* DATABASE */
+const KEY = "fsociety_users";
+let currentUser = null;
+let editingIndex = null;
+let rootTarget = null;
+
+function loadUsers() {
+    return JSON.parse(localStorage.getItem(KEY) || "{}");
+}
+function saveUsers(u) {
+    localStorage.setItem(KEY, JSON.stringify(u));
+}
+
+/* CREA UTENTI BASE */
+(function init() {
+    const u = loadUsers();
+    if (!u["/@nick@"]) u["/@nick@"] = { password:"nick123", files:[] };
+    if (!u["/@luca@"]) u["/@luca@"] = { password:"luca123", files:[] };
+    if (!u["/@root@"]) u["/@root@"] = { password:"root123", files:[] };
+    saveUsers(u);
+})();
+
+/* UI */
+function applyTheme() {
+    document.body.className = "user";
+    if (currentUser === "/@nick@") document.body.className = "nick";
+    if (currentUser === "/@root@") document.body.className = "root";
+}
+
+function renderUsers() {
+    const u = loadUsers();
+    document.getElementById("usersList").innerHTML =
+        Object.keys(u).map(x => x + (x===currentUser?" (LOGGED)":"")).join("<br>");
+}
+
+function getActiveUser() {
+    if (currentUser === "/@root@" && rootTarget) return rootTarget;
+    return currentUser;
+}
+
+function renderFiles() {
+    const u = loadUsers();
+    const user = getActiveUser();
+    if (!user) return;
+
+    const files = u[user].files;
+    document.getElementById("filesList").innerHTML =
+        files.map((f,i)=>`<div class="file-item" data-i="${i}">${f.name}</div>`).join("");
+}
+
+/* ---------------------- */
+/*   REGISTRAZIONE POPUP  */
+/* ---------------------- */
+
+document.getElementById("openRegister").onclick = () => {
+    document.getElementById("registerPopup").style.display = "flex";
+};
+
+document.getElementById("closeRegister").onclick = () => {
+    document.getElementById("registerPopup").style.display = "none";
+};
+
+document.getElementById("registerBtn").onclick = () => {
+    const user = document.getElementById("regUser").value.trim();
+    const pass = document.getElementById("regPass").value;
+
+    if (!user || !pass) return alert("Compila tutti i campi");
+
+    const users = loadUsers();
+
+    if (users[user]) return alert("Questo username esiste già");
+
+    users[user] = { password: pass, files: [] };
+    saveUsers(users);
+
+    alert("Registrazione completata!");
+    document.getElementById("registerPopup").style.display = "none";
+    renderUsers();
+};
+
+/* LOGIN */
+document.getElementById("loginBtn").onclick = () => {
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value;
+    const users = loadUsers();
+
+    if (!users[u] || users[u].password !== p) {
+        alert("Credenziali errate");
+        return;
+    }
+
+    currentUser = u;
+    document.getElementById("logoutBtn").style.display = "block";
+
+    if (u === "/@root@") {
+        document.getElementById("rootPanel").style.display = "block";
+        const sel = document.getElementById("rootUserSelect");
+        sel.innerHTML = Object.keys(users).filter(x=>x!=="/@root@")
+            .map(x=>`<option>${x}</option>`).join("");
+        rootTarget = sel.value;
+    } else {
+        document.getElementById("rootPanel").style.display = "none";
+    }
+
+    applyTheme();
+    renderUsers();
+    renderFiles();
+};
+
+/* LOGOUT */
+document.getElementById("logoutBtn").onclick = () => {
+    currentUser = null;
+    rootTarget = null;
+    document.getElementById("logoutBtn").style.display = "none";
+    document.getElementById("rootPanel").style.display = "none";
+    applyTheme();
+    renderUsers();
+    document.getElementById("filesList").innerHTML = "";
+};
+
+/* ROOT SELECT */
+document.getElementById("rootUserSelect").onchange = e => {
+    rootTarget = e.target.value;
+    renderFiles();
+};
+
+/* CLICK FILE */
+document.getElementById("filesList").onclick = e => {
+    const i = e.target.dataset.i;
+    if (i === undefined) return;
+
+    const users = loadUsers();
+    const user = getActiveUser();
+    const f = users[user].files[i];
+
+    editingIndex = i;
+    document.getElementById("fileName").value = f.name;
+    document.getElementById("fileContent").value = f.content;
+};
+
+/* NUOVO */
+document.getElementById("newFileBtn").onclick = () => {
+    editingIndex = null;
+    document.getElementById("fileName").value = "";
+    document.getElementById("fileContent").value = "";
+};
+
+/* ELIMINA FILE */
+document.getElementById("deleteFileBtn").onclick = () => {
+    if (editingIndex === null) return alert("Nessun file selezionato");
+
+    const users = loadUsers();
+    const user = getActiveUser();
+    users[user].files.splice(editingIndex, 1);
+
+    saveUsers(users);
+    editingIndex = null;
+    document.getElementById("fileName").value = "";
+    document.getElementById("fileContent").value = "";
+    renderFiles();
+};
+
+/* SALVA */
+document.getElementById("saveFileBtn").onclick = () => {
+    const name = document.getElementById("fileName").value.trim();
+    const content = document.getElementById("fileContent").value;
+    if (!name) return alert("Nome file mancante");
+
+    const users = loadUsers();
+    const user = getActiveUser();
+    const files = users[user].files;
+
+    if (editingIndex === null) files.push({name,content});
+    else files[editingIndex] = {name,content};
+
+    saveUsers(users);
+    renderFiles();
+};
+
+/* TERMINALE */
+function termPrint(t) {
+    const out = document.getElementById("terminalOutput");
+    out.textContent += t + "\n";
+    out.scrollTop = out.scrollHeight;
+}
+
+document.getElementById("terminalInput").onkeydown = e => {
+    if (e.key !== "Enter") return;
+
+    const cmd = e.target.value.trim();
+    e.target.value = "";
+
+    const user = getActiveUser();
+    const users = loadUsers();
+    const files = user ? users[user].files : [];
+
+    termPrint((currentUser||"guest")+"@fsociety$ "+cmd);
+
+    /* Comandi normali */
+    if (cmd==="help") return termPrint("help, ls, cat <file>, whoami, clear, reset-all, broadcast, add-file-all");
+    if (cmd==="whoami") return termPrint(currentUser||"guest");
+    if (cmd==="ls") return files.forEach(f=>termPrint(f.name));
+    if (cmd.startsWith("cat ")) {
+        const name = cmd.slice(4);
+        const f = files.find(x=>x.name===name);
+        return termPrint(f?f.content:"File non trovato");
+    }
+    if (cmd==="clear") return document.getElementById("terminalOutput").textContent="";
+
+    /* COMANDI GLOBALI ROOT */
+    if (currentUser === "/@root@") {
+
+        if (cmd==="reset-all") {
+            for (let k in users) users[k].files = [];
+            saveUsers(users);
+            renderFiles();
+            return termPrint("Tutti i file sono stati cancellati.");
+        }
+
+        if (cmd.startsWith("broadcast ")) {
+            const msg = cmd.replace("broadcast ","");
+            for (let k in users) {
+                users[k].files.push({name:"broadcast.txt",content:msg});
+            }
+            saveUsers(users);
+            return termPrint("Messaggio inviato a tutti gli utenti.");
+        }
+
+        if (cmd.startsWith("add-file-all ")) {
+            const name = cmd.replace("add-file-all ","");
+            for (let k in users) {
+                users[k].files.push({name,content:"File creato da root."});
+            }
+            saveUsers(users);
+            return termPrint("File aggiunto a tutti gli utenti.");
+        }
+    }
+
+    termPrint("Comando non valido");
+};
+</script>
+
+</body>
+</html>
