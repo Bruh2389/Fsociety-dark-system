@@ -54,4 +54,4 @@ This project is meant to be a fun, stylish, and educational experiment that show
 
 ## Author
 
-Created by **Mattia**, inspired by hacker culture and custom OS simulations.
+Created by **nick**, inspired by hacker culture and custom OS simulations.
